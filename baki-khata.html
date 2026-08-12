@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>বাকির খাতা</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@500;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F0E4;
+    --paper-line:#DDD3BC;
+    --margin-red:#B33951;
+    --ink:#20242B;
+    --ink-soft:#5B5347;
+    --debt:#B33951;
+    --paid:#3F6B4F;
+    --paid-bg:#E7EEE7;
+    --debt-bg:#F6E6E9;
+    --card:#FBF8F1;
+    --shadow: 0 2px 8px rgba(32,36,43,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 34px, var(--paper-line) 35px),
+      var(--paper);
+    min-height:100vh;
+    font-family:'Noto Sans Bengali','Noto Sans',sans-serif;
+    color:var(--ink);
+    padding-left:26px;
+    position:relative;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    top:0; bottom:0; left:22px;
+    width:2px;
+    background:var(--margin-red);
+    opacity:0.55;
+    z-index:0;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:18px 14px 90px 14px;position:relative;z-index:1;}
+
+  header{padding:6px 4px 18px 4px;}
+  header h1{
+    font-family:'Noto Serif Bengali',serif;
+    font-weight:700;
+    font-size:28px;
+    margin:0 0 2px 0;
+    letter-spacing:0.3px;
+  }
+  header p{margin:0;color:var(--ink-soft);font-size:13.5px;}
+
+  .summary{
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    border-left:4px solid var(--margin-red);
+    border-radius:6px;
+    padding:16px 16px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  .summary .label{font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
+  .summary .amount{font-family:'Noto Serif Bengali',serif;font-size:32px;font-weight:700;color:var(--debt);}
+  .summary .amount.zero{color:var(--paid);}
+  .summary .sub{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+
+  .section-title{
+    font-family:'Noto Serif Bengali',serif;
+    font-size:16px;
+    font-weight:700;
+    margin:22px 0 10px 2px;
+    color:var(--ink);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+
+  .shop-card{
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    padding:13px 14px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    transition:transform .12s ease;
+  }
+  .shop-card:active{transform:scale(0.98);}
+  .shop-card .name{font-weight:600;font-size:15.5px;}
+  .shop-card .last{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .shop-card .bal{font-weight:700;font-size:16px;white-space:nowrap;}
+  .bal.debt{color:var(--debt);}
+  .bal.paid{color:var(--paid);}
+
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13.5px;
+    padding:26px 10px;
+    border:1px dashed var(--paper-line);
+    border-radius:6px;
+    background:rgba(255,255,255,0.4);
+  }
+
+  .fab{
+    position:fixed;
+    right:20px;
+    bottom:24px;
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--margin-red);
+    color:#fff;
+    border:none;
+    font-size:28px;
+    box-shadow:0 4px 14px rgba(179,57,81,0.45);
+    cursor:pointer;
+    z-index:10;
+    display:flex;align-items:center;justify-content:center;
+    line-height:0;
+  }
+  .fab:active{transform:scale(0.95);}
+
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(32,36,43,0.45);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:20;
+  }
+  .overlay.show{display:flex;}
+  .sheet{
+    background:var(--paper);
+    width:100%;
+    max-width:520px;
+    border-radius:16px 16px 0 0;
+    padding:20px 18px 24px 24px;
+    box-shadow:0 -6px 24px rgba(0,0,0,0.25);
+    max-height:88vh;
+    overflow-y:auto;
+    animation:slideUp .22s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .sheet h2{
+    font-family:'Noto Serif Bengali',serif;
+    font-size:19px;margin:0 0 14px 0;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .sheet h2 .close{cursor:pointer;color:var(--ink-soft);font-size:22px;line-height:1;border:none;background:none;}
+
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin:12px 0 5px 0;}
+  input, select{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--paper-line);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--margin-red);outline-offset:1px;}
+
+  .type-toggle{display:flex;gap:8px;margin-top:5px;}
+  .type-toggle button{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:1.5px solid var(--paper-line);
+    background:#fff;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .type-toggle button.active.debt{border-color:var(--debt);background:var(--debt-bg);color:var(--debt);}
+  .type-toggle button.active.paid{border-color:var(--paid);background:var(--paid-bg);color:var(--paid);}
+
+  .save-btn{
+    width:100%;
+    margin-top:18px;
+    padding:13px;
+    background:var(--margin-red);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:15.5px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .save-btn:active{opacity:0.85;}
+
+  .back-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .back-btn{
+    background:none;border:none;font-size:20px;color:var(--ink);cursor:pointer;padding:4px 6px 4px 0;
+  }
+  .shop-title{font-family:'Noto Serif Bengali',serif;font-size:22px;font-weight:700;}
+
+  .entry-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding:11px 0;
+    border-bottom:1px solid var(--paper-line);
+    gap:10px;
+  }
+  .entry-row:last-child{border-bottom:none;}
+  .entry-left .item{font-weight:600;font-size:14.5px;}
+  .entry-left .date{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .entry-right{text-align:right;display:flex;align-items:center;gap:10px;}
+  .entry-amt{font-weight:700;font-size:15px;}
+  .entry-amt.debt{color:var(--debt);}
+  .entry-amt.paid{color:var(--paid);}
+  .del-x{
+    background:none;border:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:2px 4px;
+  }
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:9px 16px;border-radius:20px;
+    font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s ease, bottom .25s ease;
+    z-index:40;
+  }
+  .toast.show{opacity:1;bottom:30px;}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HOME VIEW -->
+  <div id="homeView">
+    <header>
+      <h1>বাকির খাতা</h1>
+      <p>কোন দোকানে কত বাকি — এক নজরে</p>
+    </header>
+
+    <div class="summary">
+      <div class="label">সব দোকান মিলিয়ে মোট বাকি</div>
+      <div class="amount" id="totalDebt">৳০</div>
+      <div class="sub" id="shopCountLabel">০টি দোকান</div>
+    </div>
+
+    <div class="section-title">দোকানসমূহ</div>
+    <div id="shopList"></div>
+    <div id="emptyState" class="empty hidden">এখনো কোনো দোকান যোগ করা হয়নি।<br>নিচের + বাটনে চাপুন।</div>
+  </div>
+
+  <!-- SHOP DETAIL VIEW -->
+  <div id="shopView" class="hidden">
+    <div class="back-row">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="shop-title" id="shopTitle"></div>
+    </div>
+    <div class="summary" style="margin-top:10px;">
+      <div class="label">এই দোকানে বাকি</div>
+      <div class="amount" id="shopBalance">৳০</div>
+    </div>
+    <div class="section-title">লেনদেনের হিসাব</div>
+    <div id="entryList"></div>
+    <div id="emptyEntry" class="empty hidden">এখনো কোনো এন্ট্রি নেই।</div>
+  </div>
+
+</div>
+
+<button class="fab" id="fabBtn" onclick="openAddSheet()">+</button>
+
+<!-- ADD SHOP SHEET -->
+<div class="overlay" id="shopOverlay">
+  <div class="sheet">
+    <h2>নতুন দোকান যোগ করুন <button class="close" onclick="closeSheet('shopOverlay')">×</button></h2>
+    <label>দোকানের নাম</label>
+    <input id="newShopName" type="text" placeholder="যেমন: রহিম মুদি দোকান">
+    <button class="save-btn" onclick="saveShop()">দোকান যোগ করুন</button>
+  </div>
+</div>
+
+<!-- ADD ENTRY SHEET -->
+<div class="overlay" id="entryOverlay">
+  <div class="sheet">
+    <h2>নতুন এন্ট্রি <button class="close" onclick="closeSheet('entryOverlay')">×</button></h2>
+
+    <label>ধরন</label>
+    <div class="type-toggle">
+      <button type="button" id="typeDebtBtn" class="active debt" onclick="setType('kinlam')">বাকি নিলাম</button>
+      <button type="button" id="typePaidBtn" class="paid" onclick="setType('porishodh')">টাকা দিলাম</button>
+    </div>
+
+    <label id="itemLabel">কী নিলেন</label>
+    <input id="entryItem" type="text" placeholder="যেমন: চাল, ডাল, তেল">
+
+    <label>টাকার পরিমাণ</label>
+    <input id="entryAmount" type="number" inputmode="decimal" placeholder="০">
+
+    <label>তারিখ</label>
+    <input id="entryDate" type="date">
+
+    <button class="save-btn" onclick="saveEntry()">সংরক্ষণ করুন</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let shops = [];
+let entries = [];
+let currentShopId = null;
+let currentType = 'kinlam';
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+async function loadData(){
+  try{
+    const s = await window.storage.get('shops', false);
+    shops = s ? JSON.parse(s.value) : [];
+  }catch(e){ shops = []; }
+  try{
+    const en = await window.storage.get('entries', false);
+    entries = en ? JSON.parse(en.value) : [];
+  }catch(e){ entries = []; }
+  renderHome();
+}
+
+async function persistShops(){
+  try{ await window.storage.set('shops', JSON.stringify(shops), false); }
+  catch(e){ showToast('সেভ করতে সমস্যা হয়েছে'); }
+}
+async function persistEntries(){
+  try{ await window.storage.set('entries', JSON.stringify(entries), false); }
+  catch(e){ showToast('সেভ করতে সমস্যা হয়েছে'); }
+}
+
+function fmt(n){
+  return '৳' + Number(n).toLocaleString('en-IN');
+}
+
+function shopBalance(shopId){
+  return entries.filter(e=>e.shopId===shopId).reduce((sum,e)=>{
+    return sum + (e.type==='kinlam' ? Number(e.amount) : -Number(e.amount));
+  },0);
+}
+
+function lastEntryLabel(shopId){
+  const list = entries.filter(e=>e.shopId===shopId).sort((a,b)=> b.date.localeCompare(a.date));
+  if(!list.length) return 'কোনো এন্ট্রি নেই';
+  const last = list[0];
+  return (last.type==='kinlam' ? 'শেষ নিয়েছেন: ' : 'শেষ দিয়েছেন: ') + last.date;
+}
+
+function renderHome(){
+  const totalDebt = shops.reduce((sum,s)=> sum + Math.max(shopBalance(s.id),0), 0);
+  const totalEl = document.getElementById('totalDebt');
+  totalEl.textContent = fmt(totalDebt);
+  totalEl.classList.toggle('zero', totalDebt<=0);
+  document.getElementById('shopCountLabel').textContent = shops.length + 'টি দোকান';
+
+  const listEl = document.getElementById('shopList');
+  listEl.innerHTML = '';
+  if(shops.length===0){
+    document.getElementById('emptyState').classList.remove('hidden');
+  }else{
+    document.getElementById('emptyState').classList.add('hidden');
+    shops.slice().sort((a,b)=> shopBalance(b.id)-shopBalance(a.id)).forEach(s=>{
+      const bal = shopBalance(s.id);
+      const div = document.createElement('div');
+      div.className = 'shop-card';
+      div.onclick = ()=> openShop(s.id);
+      div.innerHTML = `
+        <div>
+          <div class="name">${escapeHtml(s.name)}</div>
+          <div class="last">${lastEntryLabel(s.id)}</div>
+        </div>
+        <div class="bal ${bal>0?'debt':'paid'}">${fmt(Math.abs(bal))}${bal<0?' (বেশি দেওয়া)':''}</div>
+      `;
+      listEl.appendChild(div);
+    });
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function openShop(shopId){
+  currentShopId = shopId;
+  const shop = shops.find(s=>s.id===shopId);
+  document.getElementById('shopTitle').textContent = shop.name;
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('shopView').classList.remove('hidden');
+  renderShopDetail();
+}
+
+function goHome(){
+  currentShopId = null;
+  document.getElementById('shopView').classList.add('hidden');
+  document.getElementById('homeView').classList.remove('hidden');
+  renderHome();
+}
+
+function renderShopDetail(){
+  const bal = shopBalance(currentShopId);
+  const balEl = document.getElementById('shopBalance');
+  balEl.textContent = fmt(Math.abs(bal)) + (bal<0 ? ' (বেশি দেওয়া আছে)' : '');
+  balEl.classList.toggle('zero', bal<=0);
+
+  const list = entries.filter(e=>e.shopId===currentShopId).sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const listEl = document.getElementById('entryList');
+  listEl.innerHTML = '';
+  if(list.length===0){
+    document.getElementById('emptyEntry').classList.remove('hidden');
+  }else{
+    document.getElementById('emptyEntry').classList.add('hidden');
+    list.forEach(e=>{
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+      row.innerHTML = `
+        <div class="entry-left">
+          <div class="item">${escapeHtml(e.item || (e.type==='porishodh' ? 'পরিশোধ' : 'বাকি'))}</div>
+          <div class="date">${e.date}</div>
+        </div>
+        <div class="entry-right">
+          <div class="entry-amt ${e.type==='kinlam'?'debt':'paid'}">${e.type==='kinlam'?'+':'−'}${fmt(e.amount)}</div>
+          <button class="del-x" onclick="deleteEntry('${e.id}')">✕</button>
+        </div>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+}
+
+async function deleteEntry(id){
+  entries = entries.filter(e=>e.id!==id);
+  await persistEntries();
+  renderShopDetail();
+  renderHome();
+}
+
+function openAddSheet(){
+  if(currentShopId){
+    document.getElementById('entryDate').value = todayStr();
+    setType('kinlam');
+    document.getElementById('entryItem').value='';
+    document.getElementById('entryAmount').value='';
+    document.getElementById('entryOverlay').classList.add('show');
+  }else{
+    document.getElementById('newShopName').value='';
+    document.getElementById('shopOverlay').classList.add('show');
+  }
+}
+function closeSheet(id){
+  document.getElementById(id).classList.remove('show');
+}
+
+function setType(t){
+  currentType = t;
+  document.getElementById('typeDebtBtn').classList.toggle('active', t==='kinlam');
+  document.getElementById('typePaidBtn').classList.toggle('active', t==='porishodh');
+  document.getElementById('itemLabel').textContent = t==='kinlam' ? 'কী নিলেন' : 'বিবরণ (ঐচ্ছিক)';
+  document.getElementById('entryItem').placeholder = t==='kinlam' ? 'যেমন: চাল, ডাল, তেল' : 'যেমন: নগদ পরিশোধ';
+}
+
+async function saveShop(){
+  const name = document.getElementById('newShopName').value.trim();
+  if(!name){ showToast('দোকানের নাম লিখুন'); return; }
+  const shop = { id: 'shop_' + Date.now(), name };
+  shops.push(shop);
+  await persistShops();
+  closeSheet('shopOverlay');
+  renderHome();
+  showToast('দোকান যোগ হয়েছে');
+}
+
+async function saveEntry(){
+  const amount = parseFloat(document.getElementById('entryAmount').value);
+  const date = document.getElementById('entryDate').value || todayStr();
+  const item = document.getElementById('entryItem').value.trim();
+  if(!amount || amount<=0){ showToast('সঠিক টাকার পরিমাণ লিখুন'); return; }
+  const entry = {
+    id: 'e_' + Date.now(),
+    shopId: currentShopId,
+    date, item, amount, type: currentType
+  };
+  entries.push(entry);
+  await persistEntries();
+  closeSheet('entryOverlay');
+  renderShopDetail();
+  showToast('এন্ট্রি যোগ হয়েছে');
+}
+
+loadData();
+</script>
+</body>
+</html>
