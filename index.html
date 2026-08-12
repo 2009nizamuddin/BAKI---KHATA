@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>বাকির খাতা — দোকানের বাকি হিসাব</title>
+<meta name="description" content="দোকানে দোকানে বাকি নেওয়া জিনিসের হিসাব রাখার ব্যক্তিগত খাতা">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📒</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="ledger" id="ledger">
+
+  <!-- ===== HOME VIEW ===== -->
+  <section id="homeView" class="view">
+
+    <header class="masthead">
+      <div class="masthead-top">
+        <span class="stamp">খাতা নং ০১</span>
+        <button class="icon-btn" id="exportBtn" title="ব্যাকআপ ডাউনলোড করুন" aria-label="ব্যাকআপ ডাউনলোড করুন">⇩</button>
+      </div>
+      <h1>বাকির খাতা</h1>
+      <p class="tagline">কোন দোকানে কী নিলাম, কত বাকি — সব একখানে</p>
+    </header>
+
+    <div class="totals-board">
+      <div class="totals-main">
+        <span class="totals-label">সর্বমোট বাকি</span>
+        <span class="totals-amount" id="totalDebt">৳০</span>
+      </div>
+      <div class="totals-split">
+        <div class="split-item">
+          <span class="dot dot-debt"></span>
+          <span id="shopCountLabel">০ দোকান</span>
+        </div>
+        <div class="split-item">
+          <span class="dot dot-paid"></span>
+          <span id="entryCountLabel">০ এন্ট্রি</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>দোকানসমূহ</h2>
+      <span class="rule"></span>
+    </div>
+
+    <ul id="shopList" class="shop-list" aria-live="polite"></ul>
+
+    <div id="emptyState" class="empty-note hidden">
+      <span class="empty-icon">✎</span>
+      <p>এখনো কোনো দোকান যোগ করা হয়নি।</p>
+      <p class="empty-sub">নিচের <strong>+</strong> বাটনে চেপে প্রথম দোকানটি যোগ করুন।</p>
+    </div>
+  </section>
+
+  <!-- ===== SHOP DETAIL VIEW ===== -->
+  <section id="shopView" class="view hidden">
+    <header class="detail-head">
+      <button class="back-btn" id="backBtn" aria-label="ফিরে যান">←</button>
+      <div class="detail-head-text">
+        <h1 id="shopTitle">—</h1>
+        <span class="detail-sub" id="shopSub"></span>
+      </div>
+      <button class="icon-btn danger" id="deleteShopBtn" title="দোকান মুছুন" aria-label="দোকান মুছুন">🗑</button>
+    </header>
+
+    <div class="totals-board small">
+      <div class="totals-main">
+        <span class="totals-label" id="shopBalLabel">এই দোকানে বাকি</span>
+        <span class="totals-amount" id="shopBalance">৳০</span>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>লেনদেনের হিসাব</h2>
+      <span class="rule"></span>
+    </div>
+
+    <ul id="entryList" class="entry-list" aria-live="polite"></ul>
+
+    <div id="emptyEntry" class="empty-note hidden">
+      <span class="empty-icon">✎</span>
+      <p>এখনো কোনো এন্ট্রি নেই।</p>
+      <p class="empty-sub">নিচের <strong>+</strong> বাটনে চেপে প্রথম এন্ট্রি যোগ করুন।</p>
+    </div>
+  </section>
+
+</div>
+
+<button class="fab" id="fabBtn" aria-label="নতুন যোগ করুন">
+  <span>+</span>
+</button>
+
+<!-- ===== ADD SHOP SHEET ===== -->
+<div class="overlay" id="shopOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shopSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="shopSheetTitle">নতুন দোকান</h2>
+      <button class="close-btn" data-close="shopOverlay" aria-label="বন্ধ করুন">×</button>
+    </div>
+    <form id="shopForm">
+      <label for="newShopName">দোকানের নাম</label>
+      <input id="newShopName" type="text" placeholder="যেমন: রহিম মুদি দোকান" autocomplete="off" required>
+      <button type="submit" class="save-btn">দোকান যোগ করুন</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== ADD ENTRY SHEET ===== -->
+<div class="overlay" id="entryOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="entrySheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="entrySheetTitle">নতুন এন্ট্রি</h2>
+      <button class="close-btn" data-close="entryOverlay" aria-label="বন্ধ করুন">×</button>
+    </div>
+    <form id="entryForm">
+      <label>ধরন</label>
+      <div class="type-toggle">
+        <button type="button" id="typeDebtBtn" class="type-btn debt active" data-type="kinlam">
+          <span class="type-icon">＋</span> বাকি নিলাম
+        </button>
+        <button type="button" id="typePaidBtn" class="type-btn paid" data-type="porishodh">
+          <span class="type-icon">－</span> টাকা দিলাম
+        </button>
+      </div>
+
+      <label for="entryItem" id="itemLabel">কী নিলেন</label>
+      <input id="entryItem" type="text" placeholder="যেমন: চাল, ডাল, তেল" autocomplete="off">
+
+      <div class="field-row">
+        <div class="field-col">
+          <label for="entryAmount">টাকার পরিমাণ</label>
+          <input id="entryAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="০" required>
+        </div>
+        <div class="field-col">
+          <label for="entryDate">তারিখ</label>
+          <input id="entryDate" type="date" required>
+        </div>
+      </div>
+
+      <button type="submit" class="save-btn">সংরক্ষণ করুন</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
