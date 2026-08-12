@@ -464,8 +464,152 @@ input:focus{
 }
 .toast.show{opacity:1; bottom:34px;}
 
+/* ---------- Multi-item entry rows ---------- */
+.items-container{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
+.item-row{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  padding:12px 12px 12px 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.item-num{
+  width:26px; height:26px;
+  border-radius:8px;
+  background:var(--brand-light);
+  color:var(--brand-dark);
+  font-weight:700;
+  font-size:12.5px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.item-fields{flex:1; display:flex; gap:8px; min-width:0;}
+.item-fields input{padding:10px 11px; font-size:14px; border-radius:10px;}
+.item-name-wrap{position:relative; flex:1.6; min-width:0;}
+.item-price-wrap{flex:1;}
+.catalog-btn{
+  position:absolute;
+  right:6px; top:50%; transform:translateY(-50%);
+  background:var(--brand-light);
+  color:var(--brand-dark);
+  border:none;
+  width:26px; height:26px;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.item-name-wrap input{padding-right:38px;}
+.item-remove{
+  background:none; border:none;
+  color:var(--ink-faint);
+  width:30px; height:30px;
+  border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.item-remove:hover{color:var(--owe); background:var(--owe-bg);}
+.item-remove svg{width:15px; height:15px;}
+.add-item-btn{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border:1.5px dashed var(--brand);
+  background:var(--brand-light);
+  color:var(--brand-dark);
+  border-radius:12px;
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.add-item-btn:active{transform:scale(0.98);}
+.total-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--brand-light);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-top:16px;
+}
+.total-box .lbl{font-size:13px; font-weight:600; color:var(--brand-dark);}
+.total-box .val{font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--brand-dark);}
+
+/* ---------- Catalog picker sheet ---------- */
+.catalog-search{position:relative; margin-bottom:12px;}
+.catalog-search input{padding-left:40px;}
+.catalog-search svg{
+  position:absolute; left:13px; top:50%; transform:translateY(-50%);
+  width:17px; height:17px; color:var(--ink-faint);
+}
+.catalog-list{
+  display:flex; flex-direction:column; gap:7px;
+  max-height:48vh; overflow-y:auto;
+}
+.catalog-item{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  cursor:pointer;
+}
+.catalog-item:active{background:var(--brand-light); border-color:var(--brand);}
+.catalog-item .cname{font-weight:600; font-size:14px;}
+.catalog-item .cprice{font-weight:700; font-size:13.5px; color:var(--brand-dark);}
+.catalog-note{
+  font-size:11.5px; color:var(--ink-faint); text-align:center;
+  margin-top:10px; padding:0 6px;
+}
+.catalog-empty{
+  text-align:center; padding:24px 10px; color:var(--ink-faint); font-size:13px;
+}
+
+/* ---------- Numbered items inside an entry ---------- */
+.entry-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  box-shadow:var(--shadow-sm);
+  margin-bottom:9px;
+}
+.entry-card-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.entry-card-head .entry-left{flex:1; min-width:0;}
+.entry-sub-items{
+  list-style:none;
+  margin:10px 0 0 0;
+  padding:10px 0 0 0;
+  border-top:1px dashed var(--border);
+  display:flex; flex-direction:column; gap:6px;
+}
+.entry-sub-items li{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-size:13px;
+}
+.entry-sub-items .idx{
+  color:var(--ink-faint);
+  font-weight:600;
+  width:16px;
+  flex-shrink:0;
+}
+.entry-sub-items .iname{flex:1; color:var(--ink); min-width:0;}
+.entry-sub-items .iprice{color:var(--ink-soft); font-weight:600; flex-shrink:0;}
+
 @media (max-width:380px){
   .hero-amount{font-size:33px;}
+  .item-fields{flex-direction:column;}
 }
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important; transition:none !important;}
@@ -600,22 +744,50 @@ button:focus-visible, input:focus-visible{
         </button>
       </div>
 
-      <label for="entryItem" id="itemLabel">কী নিলেন</label>
-      <input id="entryItem" type="text" placeholder="যেমন: চাল, ডাল, তেল" autocomplete="off">
-
-      <div class="field-row">
-        <div class="field-col">
-          <label for="entryAmount">টাকার পরিমাণ</label>
-          <input id="entryAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="০" required>
-        </div>
-        <div class="field-col">
-          <label for="entryDate">তারিখ</label>
-          <input id="entryDate" type="date" required>
+      <!-- Multi-item fields: shown for "বাকি নিলাম" -->
+      <div id="itemsSection">
+        <label>কী কী নিলেন <span style="font-weight:400;color:var(--ink-faint);">(একের অধিক জিনিস যোগ করা যাবে)</span></label>
+        <div id="itemsContainer" class="items-container"></div>
+        <button type="button" class="add-item-btn" id="addItemBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          আরও একটি জিনিস যোগ করুন
+        </button>
+        <div class="total-box">
+          <span class="lbl">সর্বমোট</span>
+          <span class="val" id="itemsTotal">৳০</span>
         </div>
       </div>
 
+      <!-- Simple amount field: shown for "টাকা দিলাম" -->
+      <div id="paymentSection" class="hidden">
+        <label for="entryItem" id="itemLabel">বিবরণ (ঐচ্ছিক)</label>
+        <input id="entryItem" type="text" placeholder="যেমন: নগদ পরিশোধ" autocomplete="off">
+        <label for="entryAmount">টাকার পরিমাণ</label>
+        <input id="entryAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="০">
+      </div>
+
+      <label for="entryDate">তারিখ</label>
+      <input id="entryDate" type="date" required>
+
       <button type="submit" class="save-btn">সংরক্ষণ করুন</button>
     </form>
+  </div>
+</div>
+
+<!-- ===== CATALOG PICKER SHEET ===== -->
+<div class="overlay" id="catalogOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="catalogSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="catalogSheetTitle">বাজারের জিনিস বাছাই করুন</h2>
+      <button class="close-btn" data-close="catalogOverlay" aria-label="বন্ধ করুন">×</button>
+    </div>
+    <div class="catalog-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="catalogSearch" type="text" placeholder="জিনিসের নাম লিখুন..." autocomplete="off">
+    </div>
+    <div id="catalogList" class="catalog-list"></div>
+    <p class="catalog-note">দামগুলো আনুমানিক গড় বাজারদর — এলাকাভেদে কমবেশি হতে পারে। বাছাই করার পর প্রয়োজনে দাম বদলে নিন।</p>
   </div>
 </div>
 
@@ -632,6 +804,53 @@ let shops = [];
 let entries = [];
 let currentShopId = null;
 let currentType = 'kinlam';
+let itemRowSeq = 0;
+let activeCatalogRowId = null;
+
+/* বাজারের সাধারণ জিনিসপত্র ও আনুমানিক গড় মূল্য (টাকা)।
+   এলাকাভেদে দাম কমবেশি হতে পারে — বাছাই করার পর দাম বদলানো যাবে। */
+const COMMON_ITEMS = [
+  { name:'চাল', price:65 },
+  { name:'আটা', price:50 },
+  { name:'ময়দা', price:55 },
+  { name:'ডাল (মসুর)', price:120 },
+  { name:'ডাল (মুগ)', price:140 },
+  { name:'সয়াবিন তেল', price:175 },
+  { name:'পাম তেল', price:150 },
+  { name:'চিনি', price:130 },
+  { name:'লবণ', price:40 },
+  { name:'পেঁয়াজ', price:70 },
+  { name:'রসুন', price:180 },
+  { name:'আদা', price:200 },
+  { name:'আলু', price:30 },
+  { name:'টমেটো', price:60 },
+  { name:'ডিম (হালি)', price:48 },
+  { name:'দুধ (তরল)', price:85 },
+  { name:'গুঁড়া দুধ', price:750 },
+  { name:'মরিচ গুঁড়া', price:320 },
+  { name:'হলুদ গুঁড়া', price:260 },
+  { name:'জিরা গুঁড়া', price:600 },
+  { name:'ধনিয়া গুঁড়া', price:220 },
+  { name:'চা পাতা', price:400 },
+  { name:'সাবান', price:45 },
+  { name:'গুঁড়া সাবান/ডিটারজেন্ট', price:150 },
+  { name:'শ্যাম্পু', price:120 },
+  { name:'টুথপেস্ট', price:90 },
+  { name:'ম্যাচ বক্স', price:10 },
+  { name:'সিগারেট (প্যাকেট)', price:150 },
+  { name:'বিস্কুট', price:40 },
+  { name:'পাউরুটি', price:60 },
+  { name:'মুড়ি', price:90 },
+  { name:'চিড়া', price:80 },
+  { name:'সেমাই', price:70 },
+  { name:'নুডলস', price:45 },
+  { name:'কেরোসিন তেল', price:110 },
+  { name:'গ্যাস সিলিন্ডার', price:1450 },
+  { name:'ছোলা', price:110 },
+  { name:'খেজুর', price:250 },
+  { name:'লেবু (হালি)', price:30 },
+  { name:'কাঁচা মরিচ', price:60 },
+];
 
 function loadData(){
   try{ shops = JSON.parse(localStorage.getItem(KEY_SHOPS)) || []; }catch(e){ shops = []; }
@@ -731,21 +950,42 @@ function renderShopDetail(){
     document.getElementById('emptyEntry').classList.add('hidden');
     sorted.forEach(e=>{
       const cls = e.type==='kinlam' ? 'owe' : 'paid';
-      const label = e.item || (e.type==='porishodh' ? 'পরিশোধ' : 'বাকি');
+      const hasItems = Array.isArray(e.items) && e.items.length > 0;
+      const headLabel = e.type==='porishodh'
+        ? (e.item || 'পরিশোধ')
+        : (hasItems
+            ? (e.items.length > 1 ? e.items.length + 'টি জিনিস কেনা হয়েছে' : e.items[0].name)
+            : (e.item || 'বাকি'));
+
       const li = document.createElement('li');
-      li.className = 'entry-row';
+      li.className = 'entry-card';
+
+      let subItemsHtml = '';
+      if(hasItems && e.items.length > 1){
+        subItemsHtml = '<ul class="entry-sub-items">' + e.items.map((it, idx) => `
+          <li>
+            <span class="idx">${idx+1}.</span>
+            <span class="iname">${escapeHtml(it.name)}</span>
+            <span class="iprice">${fmt(it.price)}</span>
+          </li>
+        `).join('') + '</ul>';
+      }
+
       li.innerHTML = `
-        <div class="entry-icon ${cls}">${e.type==='kinlam' ? '🛒' : '💰'}</div>
-        <div class="entry-left">
-          <div class="item">${escapeHtml(label)}</div>
-          <div class="date">${e.date}</div>
+        <div class="entry-card-head">
+          <div class="entry-icon ${cls}">${e.type==='kinlam' ? '🛒' : '💰'}</div>
+          <div class="entry-left">
+            <div class="item">${escapeHtml(headLabel)}</div>
+            <div class="date">${e.date}</div>
+          </div>
+          <div class="entry-right">
+            <div class="entry-amt ${cls}">${e.type==='kinlam' ? '+' : '−'}${fmt(e.amount)}</div>
+            <button class="del-x" data-id="${e.id}" aria-label="এন্ট্রি মুছুন">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="entry-right">
-          <div class="entry-amt ${cls}">${e.type==='kinlam' ? '+' : '−'}${fmt(e.amount)}</div>
-          <button class="del-x" data-id="${e.id}" aria-label="এন্ট্রি মুছুন">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-          </button>
-        </div>
+        ${subItemsHtml}
       `;
       listEl.appendChild(li);
     });
@@ -793,9 +1033,9 @@ function openAddSheet(){
   if(currentShopId){
     document.getElementById('entryForm').reset();
     document.getElementById('entryDate').value = todayStr();
+    resetItemRows();
     setType('kinlam');
     openSheet('entryOverlay');
-    setTimeout(()=> document.getElementById('entryItem').focus(), 200);
   }else{
     document.getElementById('shopForm').reset();
     openSheet('shopOverlay');
@@ -806,8 +1046,109 @@ function setType(t){
   currentType = t;
   document.getElementById('typeDebtBtn').classList.toggle('active', t==='kinlam');
   document.getElementById('typePaidBtn').classList.toggle('active', t==='porishodh');
-  document.getElementById('itemLabel').textContent = t==='kinlam' ? 'কী নিলেন' : 'বিবরণ (ঐচ্ছিক)';
-  document.getElementById('entryItem').placeholder = t==='kinlam' ? 'যেমন: চাল, ডাল, তেল' : 'যেমন: নগদ পরিশোধ';
+  document.getElementById('itemsSection').classList.toggle('hidden', t!=='kinlam');
+  document.getElementById('paymentSection').classList.toggle('hidden', t!=='porishodh');
+}
+
+/* ---------- Multi-item row management ---------- */
+function resetItemRows(){
+  itemRowSeq = 0;
+  document.getElementById('itemsContainer').innerHTML = '';
+  addItemRow();
+}
+function addItemRow(name, price){
+  itemRowSeq += 1;
+  const rowId = 'row_' + itemRowSeq;
+  const wrap = document.createElement('div');
+  wrap.className = 'item-row';
+  wrap.dataset.rowId = rowId;
+  wrap.innerHTML = `
+    <div class="item-num">${itemRowSeq}</div>
+    <div class="item-fields">
+      <div class="item-name-wrap">
+        <input type="text" class="item-name-input" placeholder="জিনিসের নাম" value="${escapeHtml(name||'')}" autocomplete="off">
+        <button type="button" class="catalog-btn" title="বাজার থেকে বাছাই করুন">☰</button>
+      </div>
+      <div class="item-price-wrap">
+        <input type="number" class="item-price-input" placeholder="দাম" inputmode="decimal" min="0" step="1" value="${price!=null?price:''}">
+      </div>
+    </div>
+    <button type="button" class="item-remove" aria-label="মুছুন">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  `;
+  document.getElementById('itemsContainer').appendChild(wrap);
+
+  wrap.querySelector('.catalog-btn').addEventListener('click', () => openCatalog(rowId));
+  wrap.querySelector('.item-price-input').addEventListener('input', updateItemsTotal);
+  wrap.querySelector('.item-remove').addEventListener('click', () => {
+    wrap.remove();
+    renumberItemRows();
+    updateItemsTotal();
+  });
+  updateItemsTotal();
+}
+function renumberItemRows(){
+  const rows = document.querySelectorAll('#itemsContainer .item-row');
+  rows.forEach((row, idx) => {
+    row.querySelector('.item-num').textContent = idx + 1;
+  });
+  if(rows.length === 0) addItemRow();
+}
+function updateItemsTotal(){
+  let total = 0;
+  document.querySelectorAll('#itemsContainer .item-row').forEach(row => {
+    const p = parseFloat(row.querySelector('.item-price-input').value);
+    if(!isNaN(p) && p > 0) total += p;
+  });
+  document.getElementById('itemsTotal').textContent = fmt(total);
+}
+function collectItems(){
+  const items = [];
+  document.querySelectorAll('#itemsContainer .item-row').forEach(row => {
+    const name = row.querySelector('.item-name-input').value.trim();
+    const price = parseFloat(row.querySelector('.item-price-input').value);
+    if(name && !isNaN(price) && price > 0){
+      items.push({ name, price });
+    }
+  });
+  return items;
+}
+
+/* ---------- Catalog picker ---------- */
+function openCatalog(rowId){
+  activeCatalogRowId = rowId;
+  document.getElementById('catalogSearch').value = '';
+  renderCatalogList('');
+  openSheet('catalogOverlay');
+  setTimeout(()=> document.getElementById('catalogSearch').focus(), 200);
+}
+function renderCatalogList(query){
+  const q = (query||'').trim().toLowerCase();
+  const listEl = document.getElementById('catalogList');
+  const filtered = q ? COMMON_ITEMS.filter(it => it.name.toLowerCase().includes(q)) : COMMON_ITEMS;
+  listEl.innerHTML = '';
+  if(filtered.length === 0){
+    listEl.innerHTML = '<div class="catalog-empty">কিছু পাওয়া যায়নি — নিজে নাম লিখে নিন</div>';
+    return;
+  }
+  filtered.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'catalog-item';
+    div.innerHTML = `<span class="cname">${escapeHtml(it.name)}</span><span class="cprice">${fmt(it.price)}</span>`;
+    div.addEventListener('click', () => selectCatalogItem(it));
+    listEl.appendChild(div);
+  });
+}
+function selectCatalogItem(item){
+  if(!activeCatalogRowId) return;
+  const row = document.querySelector(`.item-row[data-row-id="${activeCatalogRowId}"]`);
+  if(row){
+    row.querySelector('.item-name-input').value = item.name;
+    row.querySelector('.item-price-input').value = item.price;
+    updateItemsTotal();
+  }
+  closeSheet('catalogOverlay');
 }
 
 function handleShopSubmit(ev){
@@ -822,11 +1163,20 @@ function handleShopSubmit(ev){
 }
 function handleEntrySubmit(ev){
   ev.preventDefault();
-  const amount = parseFloat(document.getElementById('entryAmount').value);
   const date = document.getElementById('entryDate').value || todayStr();
-  const item = document.getElementById('entryItem').value.trim();
-  if(!amount || amount<=0){ showToast('সঠিক টাকার পরিমাণ লিখুন'); return; }
-  entries.push({ id: uid('e'), shopId: currentShopId, date, item, amount, type: currentType });
+
+  if(currentType === 'kinlam'){
+    const items = collectItems();
+    if(items.length === 0){ showToast('অন্তত একটি জিনিসের নাম ও দাম দিন'); return; }
+    const amount = items.reduce((sum, it) => sum + Number(it.price), 0);
+    entries.push({ id: uid('e'), shopId: currentShopId, date, items, amount, type: 'kinlam' });
+  }else{
+    const amount = parseFloat(document.getElementById('entryAmount').value);
+    const item = document.getElementById('entryItem').value.trim();
+    if(!amount || amount<=0){ showToast('সঠিক টাকার পরিমাণ লিখুন'); return; }
+    entries.push({ id: uid('e'), shopId: currentShopId, date, item, amount, type: 'porishodh' });
+  }
+
   saveEntries();
   closeSheet('entryOverlay');
   renderShopDetail();
@@ -869,6 +1219,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('typeDebtBtn').addEventListener('click', ()=> setType('kinlam'));
   document.getElementById('typePaidBtn').addEventListener('click', ()=> setType('porishodh'));
+
+  document.getElementById('addItemBtn').addEventListener('click', ()=> addItemRow());
+  document.getElementById('catalogSearch').addEventListener('input', (ev)=> renderCatalogList(ev.target.value));
 
   document.addEventListener('keydown', (ev)=>{
     if(ev.key==='Escape'){
