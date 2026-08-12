@@ -487,8 +487,9 @@ input:focus{
 }
 .item-fields{flex:1; display:flex; gap:8px; min-width:0;}
 .item-fields input{padding:10px 11px; font-size:14px; border-radius:10px;}
-.item-name-wrap{position:relative; flex:1.6; min-width:0;}
-.item-price-wrap{flex:1;}
+.item-name-wrap{position:relative; flex:1.5; min-width:0;}
+.item-qty-wrap{flex:0.85; min-width:0;}
+.item-price-wrap{flex:0.95; min-width:0;}
 .catalog-btn{
   position:absolute;
   right:6px; top:50%; transform:translateY(-50%);
@@ -502,6 +503,32 @@ input:focus{
   display:flex; align-items:center; justify-content:center;
 }
 .item-name-wrap input{padding-right:38px;}
+
+/* inline autocomplete dropdown under item-name input */
+.autocomplete-dropdown{
+  position:absolute;
+  left:0; right:0; top:calc(100% + 5px);
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  box-shadow:var(--shadow-md);
+  z-index:5;
+  max-height:190px;
+  overflow-y:auto;
+  padding:5px;
+}
+.autocomplete-dropdown.hidden{display:none;}
+.ac-item{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:9px 10px;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:13.5px;
+}
+.ac-item:hover, .ac-item:active{background:var(--brand-light);}
+.ac-item .ac-name{font-weight:600; color:var(--ink);}
+.ac-item .ac-price{font-weight:600; color:var(--brand-dark); font-size:12.5px;}
+
 .item-remove{
   background:none; border:none;
   color:var(--ink-faint);
@@ -570,6 +597,21 @@ input:focus{
   text-align:center; padding:24px 10px; color:var(--ink-faint); font-size:13px;
 }
 
+/* ---------- PDF shop picker ---------- */
+.pdf-shop-list{ display:flex; flex-direction:column; gap:9px; margin-bottom:6px; }
+.pdf-shop-row{
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:13px 14px;
+  cursor:pointer;
+  transition:transform .12s ease;
+}
+.pdf-shop-row:active{ transform:scale(0.98); }
+.pdf-shop-row .shop-info{ flex:1; min-width:0; }
+
+
 /* ---------- Numbered items inside an entry ---------- */
 .entry-card{
   background:var(--surface);
@@ -634,8 +676,8 @@ button:focus-visible, input:focus-visible{
           <span class="sub">দোকানের বাকি হিসাব</span>
         </div>
       </div>
-      <button class="icon-btn" id="exportBtn" title="ব্যাকআপ ডাউনলোড করুন" aria-label="ব্যাকআপ ডাউনলোড করুন">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      <button class="icon-btn" id="exportBtn" title="দোকানের সম্পূর্ণ হিসাব PDF ডাউনলোড করুন" aria-label="PDF ডাউনলোড করুন">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>
       </button>
     </div>
 
@@ -678,6 +720,9 @@ button:focus-visible, input:focus-visible{
         <h1 id="shopTitle">—</h1>
         <span class="sub" id="shopSub"></span>
       </div>
+      <button class="icon-btn" id="shopPdfBtn" title="সম্পূর্ণ হিসাব PDF ডাউনলোড করুন" aria-label="PDF ডাউনলোড করুন">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>
+      </button>
       <button class="icon-btn danger" id="deleteShopBtn" title="দোকান মুছুন" aria-label="দোকান মুছুন">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
       </button>
@@ -791,6 +836,18 @@ button:focus-visible, input:focus-visible{
   </div>
 </div>
 
+<!-- ===== PDF SHOP PICKER SHEET ===== -->
+<div class="overlay" id="pdfPickerOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdfPickerTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="pdfPickerTitle">কোন দোকানের হিসাব চান?</h2>
+      <button class="close-btn" data-close="pdfPickerOverlay" aria-label="বন্ধ করুন">×</button>
+    </div>
+    <div id="pdfShopList" class="pdf-shop-list"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -799,6 +856,7 @@ button:focus-visible, input:focus-visible{
    ========================================================== */
 const KEY_SHOPS = 'bakikhata_shops';
 const KEY_ENTRIES = 'bakikhata_entries';
+const KEY_CATALOG = 'bakikhata_catalog_overrides';
 
 let shops = [];
 let entries = [];
@@ -806,6 +864,7 @@ let currentShopId = null;
 let currentType = 'kinlam';
 let itemRowSeq = 0;
 let activeCatalogRowId = null;
+let catalogOverrides = {};
 
 /* বাজারের সাধারণ জিনিসপত্র ও আনুমানিক গড় মূল্য (টাকা)।
    এলাকাভেদে দাম কমবেশি হতে পারে — বাছাই করার পর দাম বদলানো যাবে। */
@@ -855,9 +914,27 @@ const COMMON_ITEMS = [
 function loadData(){
   try{ shops = JSON.parse(localStorage.getItem(KEY_SHOPS)) || []; }catch(e){ shops = []; }
   try{ entries = JSON.parse(localStorage.getItem(KEY_ENTRIES)) || []; }catch(e){ entries = []; }
+  try{ catalogOverrides = JSON.parse(localStorage.getItem(KEY_CATALOG)) || {}; }catch(e){ catalogOverrides = {}; }
 }
 function saveShops(){ localStorage.setItem(KEY_SHOPS, JSON.stringify(shops)); }
 function saveEntries(){ localStorage.setItem(KEY_ENTRIES, JSON.stringify(entries)); }
+function saveCatalogOverrides(){ localStorage.setItem(KEY_CATALOG, JSON.stringify(catalogOverrides)); }
+
+/* ডিফল্ট তালিকা + ব্যবহারকারীর সবশেষ দাম — মিলিয়ে একটা আপডেটেড ক্যাটালগ তৈরি করে।
+   কোনো জিনিস আগে যে দামে কেনা হয়েছে, সেটাই সাজেশনে সবচেয়ে আগে দেখাবে। */
+function getMergedCatalog(){
+  const map = {};
+  COMMON_ITEMS.forEach(it => { map[it.name] = it.price; });
+  Object.keys(catalogOverrides).forEach(name => { map[name] = catalogOverrides[name]; });
+  const learnedNames = new Set(Object.keys(catalogOverrides));
+  const learned = Object.keys(catalogOverrides).map(name => ({ name, price: map[name] }));
+  const rest = COMMON_ITEMS.filter(it => !learnedNames.has(it.name)).map(it => ({ name: it.name, price: map[it.name] }));
+  return learned.concat(rest);
+}
+function learnItemPrices(items){
+  items.forEach(it => { catalogOverrides[it.name] = it.price; });
+  saveCatalogOverrides();
+}
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function fmt(n){ return '৳' + Math.round(Number(n)).toLocaleString('en-IN'); }
@@ -1056,7 +1133,7 @@ function resetItemRows(){
   document.getElementById('itemsContainer').innerHTML = '';
   addItemRow();
 }
-function addItemRow(name, price){
+function addItemRow(name, qty, price){
   itemRowSeq += 1;
   const rowId = 'row_' + itemRowSeq;
   const wrap = document.createElement('div');
@@ -1068,6 +1145,10 @@ function addItemRow(name, price){
       <div class="item-name-wrap">
         <input type="text" class="item-name-input" placeholder="জিনিসের নাম" value="${escapeHtml(name||'')}" autocomplete="off">
         <button type="button" class="catalog-btn" title="বাজার থেকে বাছাই করুন">☰</button>
+        <div class="autocomplete-dropdown hidden"></div>
+      </div>
+      <div class="item-qty-wrap">
+        <input type="text" class="item-qty-input" placeholder="পরিমাণ" value="${escapeHtml(qty||'')}" autocomplete="off">
       </div>
       <div class="item-price-wrap">
         <input type="number" class="item-price-input" placeholder="দাম" inputmode="decimal" min="0" step="1" value="${price!=null?price:''}">
@@ -1079,14 +1160,48 @@ function addItemRow(name, price){
   `;
   document.getElementById('itemsContainer').appendChild(wrap);
 
+  const nameInput = wrap.querySelector('.item-name-input');
+  const dropdown = wrap.querySelector('.autocomplete-dropdown');
+
   wrap.querySelector('.catalog-btn').addEventListener('click', () => openCatalog(rowId));
   wrap.querySelector('.item-price-input').addEventListener('input', updateItemsTotal);
+
+  nameInput.addEventListener('input', () => renderAutocomplete(nameInput, dropdown));
+  nameInput.addEventListener('focus', () => renderAutocomplete(nameInput, dropdown));
+  nameInput.addEventListener('blur', () => {
+    setTimeout(() => dropdown.classList.add('hidden'), 150);
+  });
+
   wrap.querySelector('.item-remove').addEventListener('click', () => {
     wrap.remove();
     renumberItemRows();
     updateItemsTotal();
   });
   updateItemsTotal();
+}
+function renderAutocomplete(inputEl, dropdown){
+  const q = inputEl.value.trim().toLowerCase();
+  if(!q){ dropdown.classList.add('hidden'); dropdown.innerHTML=''; return; }
+  const matches = getMergedCatalog().filter(it => it.name.toLowerCase().includes(q)).slice(0, 6);
+  if(matches.length === 0){ dropdown.classList.add('hidden'); dropdown.innerHTML=''; return; }
+  dropdown.innerHTML = matches.map(it => `
+    <div class="ac-item" data-name="${escapeHtml(it.name)}" data-price="${it.price}">
+      <span class="ac-name">${escapeHtml(it.name)}</span>
+      <span class="ac-price">${fmt(it.price)}</span>
+    </div>
+  `).join('');
+  dropdown.classList.remove('hidden');
+  dropdown.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('mousedown', (ev) => {
+      ev.preventDefault();
+      const row = el.closest('.item-row');
+      row.querySelector('.item-name-input').value = el.dataset.name;
+      row.querySelector('.item-price-input').value = el.dataset.price;
+      dropdown.classList.add('hidden');
+      updateItemsTotal();
+      row.querySelector('.item-qty-input').focus();
+    });
+  });
 }
 function renumberItemRows(){
   const rows = document.querySelectorAll('#itemsContainer .item-row');
@@ -1107,9 +1222,10 @@ function collectItems(){
   const items = [];
   document.querySelectorAll('#itemsContainer .item-row').forEach(row => {
     const name = row.querySelector('.item-name-input').value.trim();
+    const qty = row.querySelector('.item-qty-input').value.trim();
     const price = parseFloat(row.querySelector('.item-price-input').value);
     if(name && !isNaN(price) && price > 0){
-      items.push({ name, price });
+      items.push({ name, qty, price });
     }
   });
   return items;
@@ -1126,7 +1242,7 @@ function openCatalog(rowId){
 function renderCatalogList(query){
   const q = (query||'').trim().toLowerCase();
   const listEl = document.getElementById('catalogList');
-  const filtered = q ? COMMON_ITEMS.filter(it => it.name.toLowerCase().includes(q)) : COMMON_ITEMS;
+  const filtered = q ? getMergedCatalog().filter(it => it.name.toLowerCase().includes(q)) : getMergedCatalog();
   listEl.innerHTML = '';
   if(filtered.length === 0){
     listEl.innerHTML = '<div class="catalog-empty">কিছু পাওয়া যায়নি — নিজে নাম লিখে নিন</div>';
@@ -1170,6 +1286,7 @@ function handleEntrySubmit(ev){
     if(items.length === 0){ showToast('অন্তত একটি জিনিসের নাম ও দাম দিন'); return; }
     const amount = items.reduce((sum, it) => sum + Number(it.price), 0);
     entries.push({ id: uid('e'), shopId: currentShopId, date, items, amount, type: 'kinlam' });
+    learnItemPrices(items);
   }else{
     const amount = parseFloat(document.getElementById('entryAmount').value);
     const item = document.getElementById('entryItem').value.trim();
@@ -1184,18 +1301,262 @@ function handleEntrySubmit(ev){
   showToast('এন্ট্রি যোগ হয়েছে');
 }
 
-function exportBackup(){
-  const data = { shops, entries, exportedAt: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'baki-khata-backup-' + todayStr() + '.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('ব্যাকআপ ডাউনলোড হয়েছে');
+function numToBangla(n){
+  const map = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+  return String(n).replace(/[0-9]/g, d => map[d]);
+}
+function formatDateBangla(dateStr){
+  try{
+    const d = new Date(dateStr + 'T00:00:00');
+    const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+    return numToBangla(d.getDate()) + ' ' + months[d.getMonth()] + ' ' + numToBangla(d.getFullYear());
+  }catch(e){ return dateStr; }
+}
+function itemLineLabel(it){
+  return it.qty ? `${it.name} (${it.qty})` : it.name;
+}
+
+function buildShopLedgerHtml(shop){
+  const list = entries.filter(e => e.shopId === shop.id)
+    .slice()
+    .sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+
+  let running = 0;
+  let totalTaken = 0;
+  let totalPaid = 0;
+  const rows = list.map((e, idx) => {
+    running += (e.type === 'kinlam' ? Number(e.amount) : -Number(e.amount));
+    if(e.type === 'kinlam') totalTaken += Number(e.amount); else totalPaid += Number(e.amount);
+
+    let desc;
+    if(e.type === 'porishodh'){
+      desc = escapeHtml(e.item || 'টাকা পরিশোধ');
+    }else if(Array.isArray(e.items) && e.items.length > 0){
+      desc = '<ol class="pdf-items">' + e.items.map(it => `<li>${escapeHtml(itemLineLabel(it))}</li>`).join('') + '</ol>';
+    }else{
+      desc = escapeHtml(e.item || 'বাকিতে কেনা');
+    }
+
+    return `
+      <tr>
+        <td class="c-idx">${numToBangla(idx+1)}</td>
+        <td class="c-date">${formatDateBangla(e.date)}</td>
+        <td class="c-desc">${desc}</td>
+        <td class="c-type">${e.type==='kinlam' ? 'বাকি নিলাম' : 'টাকা পরিশোধ'}</td>
+        <td class="c-amt ${e.type==='kinlam'?'owe':'paid'}">${e.type==='kinlam'?'+':'−'}${fmt(e.amount)}</td>
+        <td class="c-bal">${fmt(running)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const finalBal = running;
+  const genDate = formatDateBangla(todayStr());
+
+  return `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(shop.name)} — সম্পূর্ণ হিসাব</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page{ margin: 16mm 14mm; }
+  *{ box-sizing:border-box; }
+  body{
+    font-family:'Hind Siliguri', sans-serif;
+    color:#16241D;
+    margin:0;
+    padding:0;
+  }
+  .pdf-header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    border-bottom:3px solid #1B6B4C;
+    padding-bottom:14px;
+    margin-bottom:18px;
+  }
+  .pdf-brand{ display:flex; align-items:center; gap:10px; }
+  .pdf-brand-icon{ font-size:28px; }
+  .pdf-brand h1{ font-family:'Baloo Da 2', sans-serif; font-size:22px; margin:0; color:#124A34; }
+  .pdf-brand .sub{ font-size:11.5px; color:#5C6D63; margin-top:2px; }
+  .pdf-meta{ text-align:right; font-size:11.5px; color:#5C6D63; }
+  .pdf-shop-title{
+    font-family:'Baloo Da 2', sans-serif;
+    font-size:20px;
+    font-weight:700;
+    margin:0 0 16px 0;
+    color:#16241D;
+  }
+  .summary-boxes{
+    display:flex; gap:12px; margin-bottom:22px;
+  }
+  .sbox{
+    flex:1;
+    border-radius:12px;
+    padding:12px 14px;
+    border:1.5px solid #E1EAE4;
+  }
+  .sbox .lbl{ font-size:11px; color:#5C6D63; font-weight:600; }
+  .sbox .val{ font-family:'Baloo Da 2', sans-serif; font-size:19px; font-weight:700; margin-top:4px; }
+  .sbox.owe{ background:#FCE7E1; }
+  .sbox.owe .val{ color:#E0522F; }
+  .sbox.paid{ background:#E4F3EB; }
+  .sbox.paid .val{ color:#1B6B4C; }
+  .sbox.final{ background:#124A34; border-color:#124A34; }
+  .sbox.final .lbl{ color:#DCEAE1; }
+  .sbox.final .val{ color:#fff; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12px; }
+  thead th{
+    text-align:left;
+    background:#124A34;
+    color:#fff;
+    padding:9px 8px;
+    font-weight:600;
+    font-size:11.5px;
+  }
+  tbody td{
+    padding:8px 8px;
+    border-bottom:1px solid #E1EAE4;
+    vertical-align:top;
+  }
+  tbody tr:nth-child(even){ background:#FBFDFC; }
+  .c-idx{ width:24px; color:#8FA098; }
+  .c-date{ width:88px; white-space:nowrap; color:#5C6D63; }
+  .c-type{ width:82px; color:#5C6D63; }
+  .c-amt{ width:78px; font-weight:700; text-align:right; }
+  .c-amt.owe{ color:#E0522F; }
+  .c-amt.paid{ color:#1B6B4C; }
+  .c-bal{ width:82px; font-weight:700; text-align:right; }
+  .pdf-items{ margin:0; padding-left:16px; }
+  .pdf-items li{ margin-bottom:2px; }
+
+  .pdf-footer{
+    margin-top:20px;
+    padding-top:10px;
+    border-top:1px solid #E1EAE4;
+    font-size:10.5px;
+    color:#8FA098;
+    text-align:center;
+  }
+  .empty-msg{ text-align:center; padding:30px; color:#8FA098; font-size:13px; }
+
+  @media print{
+    .no-print{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="pdf-header">
+    <div class="pdf-brand">
+      <div class="pdf-brand-icon">📒</div>
+      <div>
+        <h1>বাকির খাতা</h1>
+        <div class="sub">দোকানের বাকি হিসাবের সম্পূর্ণ বিবরণী</div>
+      </div>
+    </div>
+    <div class="pdf-meta">
+      তৈরি হয়েছে: ${genDate}
+    </div>
+  </div>
+
+  <h2 class="pdf-shop-title">🏪 ${escapeHtml(shop.name)}</h2>
+
+  <div class="summary-boxes">
+    <div class="sbox owe">
+      <div class="lbl">মোট বাকি নেওয়া হয়েছে</div>
+      <div class="val">${fmt(totalTaken)}</div>
+    </div>
+    <div class="sbox paid">
+      <div class="lbl">মোট পরিশোধ করা হয়েছে</div>
+      <div class="val">${fmt(totalPaid)}</div>
+    </div>
+    <div class="sbox final">
+      <div class="lbl">বর্তমান ${finalBal < 0 ? 'বেশি দেওয়া আছে' : 'বাকি'}</div>
+      <div class="val">${fmt(Math.abs(finalBal))}</div>
+    </div>
+  </div>
+
+  ${list.length === 0 ? '<div class="empty-msg">এই দোকানে এখনো কোনো এন্ট্রি নেই।</div>' : `
+  <table>
+    <thead>
+      <tr>
+        <th class="c-idx">ক্র.</th>
+        <th class="c-date">তারিখ</th>
+        <th class="c-desc">বিবরণ</th>
+        <th class="c-type">ধরন</th>
+        <th class="c-amt">পরিমাণ</th>
+        <th class="c-bal">ব্যালেন্স</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>
+  `}
+
+  <div class="pdf-footer">বাকির খাতা অ্যাপ দিয়ে তৈরি — ব্যক্তিগত ব্যবহারের জন্য</div>
+
+</body>
+</html>
+  `;
+}
+
+function printShopLedger(shopId){
+  const shop = shops.find(s => s.id === shopId);
+  if(!shop){ showToast('দোকান খুঁজে পাওয়া যায়নি'); return; }
+
+  const html = buildShopLedgerHtml(shop);
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  const triggerPrint = () => {
+    try{
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }catch(e){ showToast('প্রিন্ট চালু করা যায়নি'); }
+    setTimeout(() => { if(iframe.parentNode) document.body.removeChild(iframe); }, 1500);
+  };
+  iframe.onload = triggerPrint;
+  setTimeout(triggerPrint, 700);
+  showToast('প্রিন্ট ডায়ালগ থেকে "Save as PDF" বেছে নিন');
+}
+
+function openPdfPicker(){
+  if(shops.length === 0){ showToast('আগে একটি দোকান যোগ করুন'); return; }
+  if(shops.length === 1){ printShopLedger(shops[0].id); return; }
+  const listEl = document.getElementById('pdfShopList');
+  listEl.innerHTML = '';
+  shops.forEach(s => {
+    const bal = shopBalance(s.id);
+    const div = document.createElement('div');
+    div.className = 'pdf-shop-row';
+    div.innerHTML = `
+      <div class="avatar">${escapeHtml(initials(s.name))}</div>
+      <div class="shop-info">
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="last">${bal > 0 ? 'বাকি ' + fmt(bal) : 'পরিশোধিত'}</div>
+      </div>
+    `;
+    div.addEventListener('click', () => {
+      closeSheet('pdfPickerOverlay');
+      printShopLedger(s.id);
+    });
+    listEl.appendChild(div);
+  });
+  openSheet('pdfPickerOverlay');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1205,7 +1566,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fabBtn').addEventListener('click', openAddSheet);
   document.getElementById('backBtn').addEventListener('click', goHome);
   document.getElementById('deleteShopBtn').addEventListener('click', deleteCurrentShop);
-  document.getElementById('exportBtn').addEventListener('click', exportBackup);
+  document.getElementById('exportBtn').addEventListener('click', openPdfPicker);
+  document.getElementById('shopPdfBtn').addEventListener('click', () => { if(currentShopId) printShopLedger(currentShopId); });
 
   document.querySelectorAll('[data-close]').forEach(btn=>{
     btn.addEventListener('click', ()=> closeSheet(btn.dataset.close));
