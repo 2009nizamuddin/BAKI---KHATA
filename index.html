@@ -307,6 +307,14 @@ body{
 .entry-left .item{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .entry-left .date{font-size:11px; color:var(--ink-faint); margin-top:2px;}
 .entry-right{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+.entry-actions{display:flex; align-items:center; gap:2px;}
+.edit-x{
+  background:none; border:none; color:var(--ink-faint);
+  cursor:pointer; padding:5px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+}
+.edit-x:hover{color:var(--brand-dark); background:var(--brand-light);}
+.edit-x svg{width:15px; height:15px;}
 .entry-amt{font-weight:700; font-size:14.5px;}
 .entry-amt.owe{color:var(--owe);}
 .entry-amt.paid{color:var(--paid);}
@@ -830,7 +838,7 @@ button:focus-visible, input:focus-visible{
       <label for="entryDate">তারিখ</label>
       <input id="entryDate" type="date" required>
 
-      <button type="submit" class="save-btn">সংরক্ষণ করুন</button>
+      <button type="submit" class="save-btn" id="entrySaveBtn">সংরক্ষণ করুন</button>
     </form>
   </div>
 </div>
@@ -880,6 +888,7 @@ let currentShopId = null;
 let currentType = 'kinlam';
 let itemRowSeq = 0;
 let activeCatalogRowId = null;
+let editingEntryId = null;
 let catalogOverrides = {};
 
 /* বাজারের সাধারণ জিনিসপত্র ও আনুমানিক গড় মূল্য (টাকা)।
@@ -1073,9 +1082,14 @@ function renderShopDetail(){
           </div>
           <div class="entry-right">
             <div class="entry-amt ${cls}">${e.type==='kinlam' ? '+' : '−'}${fmt(e.amount)}</div>
-            <button class="del-x" data-id="${e.id}" aria-label="এন্ট্রি মুছুন">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            </button>
+            <div class="entry-actions">
+              <button class="edit-x" data-id="${e.id}" aria-label="এন্ট্রি এডিট করুন">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+              <button class="del-x" data-id="${e.id}" aria-label="এন্ট্রি মুছুন">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         ${subItemsHtml}
@@ -1084,6 +1098,9 @@ function renderShopDetail(){
     });
     listEl.querySelectorAll('.del-x').forEach(btn=>{
       btn.addEventListener('click', ()=> deleteEntry(btn.dataset.id));
+    });
+    listEl.querySelectorAll('.edit-x').forEach(btn=>{
+      btn.addEventListener('click', ()=> openEditEntrySheet(btn.dataset.id));
     });
   }
 }
@@ -1121,9 +1138,19 @@ function deleteCurrentShop(){
 }
 
 function openSheet(id){ document.getElementById(id).classList.add('show'); }
-function closeSheet(id){ document.getElementById(id).classList.remove('show'); }
+function closeSheet(id){
+  document.getElementById(id).classList.remove('show');
+  if(id === 'entryOverlay'){
+    editingEntryId = null;
+    document.getElementById('entrySheetTitle').textContent = 'নতুন এন্ট্রি';
+    document.getElementById('entrySaveBtn').textContent = 'সংরক্ষণ করুন';
+  }
+}
 function openAddSheet(){
   if(currentShopId){
+    editingEntryId = null;
+    document.getElementById('entrySheetTitle').textContent = 'নতুন এন্ট্রি';
+    document.getElementById('entrySaveBtn').textContent = 'সংরক্ষণ করুন';
     document.getElementById('entryForm').reset();
     document.getElementById('entryDate').value = todayStr();
     resetItemRows();
@@ -1134,6 +1161,31 @@ function openAddSheet(){
     openSheet('shopOverlay');
     setTimeout(()=> document.getElementById('newShopName').focus(), 200);
   }
+}
+function openEditEntrySheet(entryId){
+  const e = entries.find(en => en.id === entryId);
+  if(!e) return;
+  editingEntryId = entryId;
+  document.getElementById('entrySheetTitle').textContent = 'এন্ট্রি এডিট করুন';
+  document.getElementById('entrySaveBtn').textContent = 'আপডেট করুন';
+  document.getElementById('entryForm').reset();
+  document.getElementById('entryDate').value = e.date;
+  setType(e.type);
+
+  if(e.type === 'kinlam'){
+    itemRowSeq = 0;
+    document.getElementById('itemsContainer').innerHTML = '';
+    if(Array.isArray(e.items) && e.items.length > 0){
+      e.items.forEach(it => addItemRow(it.name, it.qty, it.price));
+    }else{
+      addItemRow(e.item || '', 1, e.amount || '');
+    }
+  }else{
+    document.getElementById('entryItem').value = e.item || '';
+    document.getElementById('entryAmount').value = e.amount;
+    resetItemRows();
+  }
+  openSheet('entryOverlay');
 }
 function setType(t){
   currentType = t;
@@ -1314,25 +1366,37 @@ function handleShopSubmit(ev){
 function handleEntrySubmit(ev){
   ev.preventDefault();
   const date = document.getElementById('entryDate').value || todayStr();
+  const isEdit = !!editingEntryId;
 
+  let newEntryData;
   if(currentType === 'kinlam'){
     const items = collectItems();
     if(items.length === 0){ showToast('অন্তত একটি জিনিসের নাম ও দাম দিন'); return; }
     const amount = items.reduce((sum, it) => sum + Number(it.qty) * Number(it.price), 0);
-    entries.push({ id: uid('e'), shopId: currentShopId, date, items, amount, type: 'kinlam' });
+    newEntryData = { date, items, amount, type: 'kinlam' };
     learnItemPrices(items);
   }else{
     const amount = parseFloat(document.getElementById('entryAmount').value);
     const item = document.getElementById('entryItem').value.trim();
     if(!amount || amount<=0){ showToast('সঠিক টাকার পরিমাণ লিখুন'); return; }
-    entries.push({ id: uid('e'), shopId: currentShopId, date, item, amount, type: 'porishodh' });
+    newEntryData = { date, item, amount, type: 'porishodh' };
   }
 
+  if(isEdit){
+    const idx = entries.findIndex(en => en.id === editingEntryId);
+    if(idx !== -1){
+      entries[idx] = { id: editingEntryId, shopId: entries[idx].shopId, ...newEntryData };
+    }
+  }else{
+    entries.push({ id: uid('e'), shopId: currentShopId, ...newEntryData });
+  }
+
+  editingEntryId = null;
   saveEntries();
   closeSheet('entryOverlay');
   renderShopDetail();
   renderHome();
-  showToast('এন্ট্রি যোগ হয়েছে');
+  showToast(isEdit ? 'এন্ট্রি আপডেট হয়েছে' : 'এন্ট্রি যোগ হয়েছে');
 }
 
 function numToBangla(n){
@@ -1443,10 +1507,10 @@ function buildShopLedgerHtml(shop){
     display:flex; gap:12px; margin-bottom:22px;
   }
   .sbox{
-    flex:1;
     border-radius:12px;
-    padding:12px 14px;
+    padding:14px 22px;
     border:1.5px solid #E1EAE4;
+    display:inline-block;
   }
   .sbox .lbl{ font-size:11px; color:#5C6D63; font-weight:600; }
   .sbox .val{ font-family:'Baloo Da 2', sans-serif; font-size:19px; font-weight:700; margin-top:4px; }
@@ -1516,14 +1580,6 @@ function buildShopLedgerHtml(shop){
   <h2 class="pdf-shop-title">🏪 ${escapeHtml(shop.name)}</h2>
 
   <div class="summary-boxes">
-    <div class="sbox owe">
-      <div class="lbl">মোট বাকি নেওয়া হয়েছে</div>
-      <div class="val">${fmt(totalTaken)}</div>
-    </div>
-    <div class="sbox paid">
-      <div class="lbl">মোট পরিশোধ করা হয়েছে</div>
-      <div class="val">${fmt(totalPaid)}</div>
-    </div>
     <div class="sbox final">
       <div class="lbl">বর্তমান ${finalBal < 0 ? 'বেশি দেওয়া আছে' : 'বাকি'}</div>
       <div class="val">${fmt(Math.abs(finalBal))}</div>
@@ -1625,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', ()=> closeSheet(btn.dataset.close));
   });
   document.querySelectorAll('.overlay').forEach(ov=>{
-    ov.addEventListener('click', (ev)=> { if(ev.target===ov) ov.classList.remove('show'); });
+    ov.addEventListener('click', (ev)=> { if(ev.target===ov) closeSheet(ov.id); });
   });
 
   document.getElementById('shopForm').addEventListener('submit', handleShopSubmit);
@@ -1639,7 +1695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('keydown', (ev)=>{
     if(ev.key==='Escape'){
-      document.querySelectorAll('.overlay.show').forEach(ov=> ov.classList.remove('show'));
+      document.querySelectorAll('.overlay.show').forEach(ov=> closeSheet(ov.id));
     }
   });
 });
